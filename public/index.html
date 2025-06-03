@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>TCRONEB HACKX - URL Monitor</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: monospace;
+      background: black;
+      color: white;
+      overflow: hidden;
+    }
+    #matrix {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      background: black;
+      color: red;
+    }
+    .floating-icon {
+      position: absolute;
+      animation: float 10s linear infinite;
+      font-size: 24px;
+      color: #f00;
+    }
+    @keyframes float {
+      0% { top: 100%; left: 0%; }
+      100% { top: -10%; left: 100%; }
+    }
+    .content {
+      padding: 30px;
+      text-align: center;
+    }
+    input, select, button {
+      padding: 10px;
+      margin: 5px;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="matrix"></canvas>
+  <div class="floating-icon">📷</div>
+  <div class="floating-icon" style="left: 20%;">📘</div>
+  <div class="floating-icon" style="left: 40%;">📺</div>
+  <div class="floating-icon" style="left: 60%;">💬</div>
+
+  <div class="content">
+    <h1>🛡️ 24/7 - URL Monitor</h1>
+    <p>Join us on Telegram: <a href="https://t.me/paidtechzone" target="_blank" style="color: #0f0;">t.me/paidtechzone</a></p>
+
+    <input type="url" id="url" placeholder="Enter URL">
+    <select id="interval">
+      <option value="1min">Every 1 Min</option>
+      <option value="5min">Every 5 Mins</option>
+      <option value="10min">Every 10 Mins</option>
+      <option value="24h">Every 24 Hours</option>
+    </select>
+    <button onclick="startMonitor()">Start Monitoring</button>
+
+    <div id="status"></div>
+  </div>
+
+  <script>
+    function startMonitor() {
+      const url = document.getElementById("url").value;
+      const interval = document.getElementById("interval").value;
+
+      fetch('/monitor', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url, interval })
+      })
+      .then(res => res.text())
+      .then(data => {
+        document.getElementById("status").innerText = data;
+      })
+      .catch(err => {
+        document.getElementById("status").innerText = "Error: " + err;
+      });
+    }
+
+    // Matrix effect
+    const canvas = document.getElementById("matrix");
+    const ctx = canvas.getContext("2d");
+    canvas.height = window.innerHeight;
+    canvas.width = window.innerWidth;
+
+    let chars = "01".split("");
+    let fontSize = 12;
+    let columns = canvas.width / fontSize;
+    let drops = Array(Math.floor(columns)).fill(1);
+
+    function drawMatrix() {
+      ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#f00";
+      ctx.font = fontSize + "px monospace";
+
+      for (let i = 0; i < drops.length; i++) {
+        let text = chars[Math.floor(Math.random() * chars.length)];
+        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+        drops[i]++;
+      }
+    }
+
+    setInterval(drawMatrix, 33);
+  </script>
+</body>
+</html>
